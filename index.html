@@ -72,7 +72,8 @@ const KEY = "abukiLotteryDemoV1";
 let selected = [];
 let records = [];
 let drawn = false;
-
+const WINNER_KEY = "abukiLotteryWinnerV1";
+let savedWinner = localStorage.getItem(WINNER_KEY) || "";
 try {
   records = JSON.parse(localStorage.getItem(KEY) || "[]");
   if (!Array.isArray(records)) records = [];
