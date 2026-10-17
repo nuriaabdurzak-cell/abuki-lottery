@@ -1,0 +1,13 @@
+
+{
+  "id": "./",
+  "name": "አቡኪ ሎተሪ",
+  "short_name": "አቡኪ ሎተሪ",
+  "description": "አቡኪ ሎተሪ መተግበሪያ",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#087f23",
+  "orientation": "portrait"
+}
