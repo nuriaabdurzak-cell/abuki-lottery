@@ -225,6 +225,7 @@ $("reset").addEventListener("click", () => {
   selected = [];
   drawn = false;
   try { localStorage.removeItem(KEY); } catch {}
+ try { localStorage.removeItem(WINNER_KEY); } catch {}
   $("result").textContent = "";
   $("message").textContent = "የሙከራ መረጃዎች ተጠርገዋል።";
   $("draw").disabled = false;
