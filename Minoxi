@@ -1,0 +1,182 @@
+DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#064e3b">
+<title>አቡኪ ሎተሪ</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:#f4f7f2;color:#173b2b;font-family:Arial,sans-serif}
+main{max-width:480px;margin:auto}
+header{padding:25px 18px;border-radius:22px;background:linear-gradient(140deg,#064e3b,#15803d);color:white;text-align:center}
+header h1{font-size:28px;margin:0 0 8px}
+header p{margin:0;color:#e3f6e9}
+.card{background:white;margin-top:16px;padding:18px;border-radius:18px;border:1px solid #e3ece3;box-shadow:0 4px 15px #12351a0c}
+h2{font-size:19px;color:#14532d;margin:0 0 14px}
+input{width:100%;padding:13px;border:1px solid #ccd9ce;border-radius:11px;font-size:16px}
+button{border:0;border-radius:11px;padding:13px;font-size:15px;font-weight:bold;cursor:pointer}
+.primary{width:100%;background:#15803d;color:white;margin-top:10px}
+.secondary{width:100%;background:#e7f1e8;color:#14532d;margin-top:9px}
+.tickets{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:15px 0}
+.ticket{background:#edf3ed;color:#14532d;border:1px solid #dce8dd;padding:14px 0}
+.ticket.selected{background:#e7b92e;color:#183b2b;border-color:#e7b92e}
+.stats{display:flex;gap:10px;margin-top:12px}
+.stat{flex:1;background:#f1f7f0;padding:12px;border-radius:12px;text-align:center}
+.stat strong{display:block;font-size:22px;color:#15803d;margin-top:5px}
+.result{margin-top:14px;padding:17px;text-align:center;background:#fff6d9;border:1px solid #efd67d;border-radius:14px}
+.result strong{font-size:30px;color:#8a6500}
+li{margin:10px 0;overflow-wrap:anywhere}
+.note{font-size:12px;color:#64748b;line-height:1.6}
+footer{text-align:center;color:#64748b;font-size:12px;padding:20px}
+</style>
+</head><link rel="manifest" href="./manifest.json">
+<body>
+<main>
+<header>
+  <div style="font-size:36px">👑🎟️</div>
+  <h1>አቡኪ ሎተሪ</h1>
+  <p>እንኳን ወደ አቡኪ ሎተሪ በደህና መጡ!</p>
+</header>
+
+<section class="card">
+  <h2>👤 የተጠቃሚ ስም</h2>
+  <input id="name" placeholder="ስምህን አስገባ" maxlength="40">
+  <button class="primary" onclick="saveName()">ስም አስቀምጥ</button>
+  <p id="welcome"></p>
+</section>
+
+<section class="card">
+  <h2>🎟️ ቲኬት ምረጥ</h2>
+  <p>የአንድ ቲኬት የሙከራ ዋጋ፦ <b>50 ብር</b></p>
+  <div id="tickets" class="tickets"></div>
+  <div class="stats">
+    <div class="stat">የተመረጡ ቲኬቶች<strong id="count">0</strong></div>
+    <div class="stat">ጠቅላላ<strong><span id="total">0</span> ብር</strong></div>
+  </div>
+  <p class="note">ይህ የሙከራ ማሳያ ብቻ ነው። እውነተኛ ክፍያ አይፈጽምም።</p>
+  <button class="primary" onclick="draw()">🏆 የሙከራ ዕጣ አውጣ</button>
+  <button class="secondary" onclick="resetTickets()">ምርጫዬን አጽዳ</button>
+  <div id="result"></div>
+</section>
+
+<section class="card">
+  <h2>📜 የውጤት ታሪክ</h2>
+  <ul id="history"></ul>
+  <button class="secondary" onclick="clearHistory()">ታሪክ አጽዳ</button>
+</section>
+<footer>አቡኪ ሎተሪ · የሙከራ ስሪት</footer>
+</main>
+
+<script>
+const price=50;
+function read(key,fallback){
+  try{
+    const value=localStorage.getItem(key);
+    return value===null?fallback:JSON.parse(value);
+  }catch(e){return fallback;}
+}
+let selected=read("abukiTickets",[]);
+let history=read("abukiHistory",[]);
+
+function save(){
+  try{
+    localStorage.setItem("abukiTickets",JSON.stringify(selected));
+    localStorage.setItem("abukiHistory",JSON.stringify(history));
+  }catch(e){}
+}
+
+function saveName(){
+  const name=document.getElementById("name").value.trim();
+  if(!name){alert("እባክህ ስም አስገባ");return;}
+  localStorage.setItem("abukiName",name);
+  showName();
+}
+
+function showName(){
+  const name=localStorage.getItem("abukiName")||"";
+  document.getElementById("name").value=name;
+  document.getElementById("welcome").textContent=
+    name?"እንኳን ደህና መጣህ፣ "+name+"!":"";
+}
+
+function renderTickets(){
+  const area=document.getElementById("tickets");
+  area.innerHTML="";
+  for(let i=1;i<=20;i++){
+    const btn=document.createElement("button");
+    btn.className="ticket"+(selected.includes(i)?" selected":"");
+    btn.textContent=String(i).padStart(2,"0");
+    btn.onclick=()=>toggleTicket(i);
+    area.appendChild(btn);
+  }
+  document.getElementById("count").textContent=selected.length;
+  document.getElementById("total").textContent=selected.length*price;
+  save();
+}
+
+function toggleTicket(n){
+  selected=selected.includes(n)?selected.filter(x=>x!==n):[...selected,n];
+  renderTickets();
+}
+
+function draw(){
+  if(selected.length===0){
+    alert("መጀመሪያ ቢያንስ አንድ ቲኬት ምረጥ");
+    return;
+  }
+  const winner=selected[Math.floor(Math.random()*selected.length)];
+  const name=localStorage.getItem("abukiName")||"ተጠቃሚ";
+  history.unshift({name,ticket:winner,date:new Date().toLocaleString()});
+  history=history.slice(0,20);
+  save();
+  const box=document.getElementById("result");
+  box.innerHTML="";
+  const title=document.createElement("h2");
+  title.textContent="🏆 የሙከራ ውጤት";
+  const number=document.createElement("strong");
+  number.textContent=String(winner).padStart(2,"0");
+  const message=document.createElement("p");
+  message.textContent=name+"፣ የተመረጠው ቁጥር ይህ ነው።";
+  box.className="result";
+  box.append(title,number,message);
+  renderHistory();
+}
+
+function resetTickets(){
+  selected=[];
+  document.getElementById("result").innerHTML="";
+  renderTickets();
+}
+
+function renderHistory(){
+  const list=document.getElementById("history");
+  list.innerHTML="";
+  if(history.length===0){
+    const item=document.createElement("li");
+    item.textContent="ገና የሙከራ ውጤት የለም።";
+    list.appendChild(item);
+    return;
+  }
+  history.forEach(entry=>{
+    const item=document.createElement("li");
+    item.textContent=entry.name+" — ቁጥር "+
+      String(entry.ticket).padStart(2,"0")+" — "+entry.date;
+    list.appendChild(item);
+  });
+}
+
+function clearHistory(){
+  if(confirm("የውጤት ታሪኩን ማጥፋት ትፈልጋለህ?")){
+    history=[];
+    save();
+    renderHistory();
+  }
+}
+
+showName();
+renderTickets();
+renderHistory();
+</script>
+</body>
+</html>
