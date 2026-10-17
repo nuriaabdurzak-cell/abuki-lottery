@@ -209,6 +209,10 @@ $("draw").addEventListener("click", () => {
 
   const winner = pool[Math.floor(Math.random() * pool.length)];
   drawn = true;
+  localStorage.setItem(
+  WINNER_KEY,
+  JSON.stringify(winner)
+);
   $("result").textContent =
     "የሙከራ ዕጣ፦ " + winner.ticket +
     " · ስም፦ " + winner.name;
@@ -226,7 +230,18 @@ $("reset").addEventListener("click", () => {
   $("draw").disabled = false;
   update();
 });
-
+try {
+  if (savedWinner) {
+    const winner = JSON.parse(savedWinner);
+    drawn = true;
+    $("result").textContent =
+      "የዕድለኛ ቁጥር፦ " + winner.ticket +
+      " | ስም፦ " + winner.name;
+    $("draw").disabled = true;
+  }
+} catch (e) {
+  localStorage.removeItem(WINNER_KEY);
+}
 update();
 </script>
 </body>
