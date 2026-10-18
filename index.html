@@ -195,45 +195,79 @@ function renderHistory() {
   });
 }
 
-$("register").addEventListener("click", () => {
+
+$("register").addEventListener("click", async () => {
+  const button = $("register");
+
   if (drawn) {
-    $("message").textContent = "ዕጣው ወጥቷል። ለአዲስ ሙከራ መረጃውን አጥፋ።";
-    return;
-  }
-  const name = $("player").value.trim();
-  if (!name) {
-    $("message").textContent = "እባክህ ስምህን አስገባ።";
-    return;
-  }
-  if (!selected.length) {
-    $("message").textContent = "ቢያንስ አንድ ቲኬት ምረጥ።";
+    $("message").textContent =
+      "ዕጣው ወጥቷል።";
     return;
   }
 
-  const used = booked();
-  if (selected.some(id => used.has(id))) {
-    $("message").textContent = "አንዳንድ ቲኬቶች ተመዝግበዋል።";
+  const name = $("player").value.trim();
+
+  if (!name) {
+    $("message").textContent =
+      "እባክህ ስምህን አስገባ።";
+    return;
+  }
+
+  if (!selected.length) {
+    $("message").textContent =
+      "ቢያንስ አንድ ቲኬት ምረጥ።";
+    return;
+  }
+
+  if (selected.some(id =>
+    remoteTicketStatuses.get(id) !== "available"
+  )) {
+    $("message").textContent =
+      "አንዳንድ ቲኬቶች ተይዘዋል። እንደገና ምረጥ።";
     selected = [];
+    await testSupabaseConnection();
     update();
     return;
   }
 
-  records.push({
-    name,
-    tickets: [...selected],
-    time: new Date().toISOString()
-  });
+  button.disabled = true;
+  $("message").textContent =
+    "ምዝገባው በመካሄድ ላይ ነው...";
 
-  if (!save()) {
-    records.pop();
-    return;
+  try {
+    const { error } = await supabaseClient.rpc(
+      "register_lottery_tickets",
+      {
+        p_name: name,
+        p_tickets: selected.map(Number)
+      }
+    );
+
+    if (error) {
+      console.error("Registration error:", error.message);
+      $("message").textContent =
+        "ምዝገባው አልተሳካም። ቲኬቶቹ ተይዘው ሊሆኑ ይችላሉ።";
+      await testSupabaseConnection();
+      return;
+    }
+
+    selected = [];
+    $("player").value = "";
+
+    await testSupabaseConnection();
+
+    $("message").textContent =
+      "የሙከራ ምዝገባው በSupabase ተቀምጧል።";
+
+  } catch (err) {
+    console.error(err);
+    $("message").textContent =
+      "የግንኙነት ችግር አለ። እባክህ እንደገና ሞክር።";
+  } finally {
+    button.disabled = false;
   }
-
-  selected = [];
-  $("player").value = "";
-  $("message").textContent = "የሙከራ ምዝገባው ተቀምጧል።";
-  update();
 });
+
 
 $("draw").addEventListener("click", () => {
   if (drawn) {
