@@ -76,7 +76,30 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
+  let remoteTicketStatuses = new Map();
 async function testSupabaseConnection() {
+  const { data, error } =
+    await supabaseClient.rpc("get_lottery_tickets");
+
+  if (error) {
+    console.error("Supabase error:", error.message);
+    $("message").textContent =
+      "Supabase ሙከራ አልተሳካም።";
+    return;
+  }
+
+  remoteTicketStatuses = new Map(
+    data.map(ticket => [
+      pad(ticket.ticket_number),
+      String(ticket.status).toLowerCase()
+    ])
+  );
+
+  update();
+
+  $("message").textContent =
+    "ተሳክቷል! የቲኬት ሁኔታ ከSupabase ተገኝቷል።";
+}
   const { data, error } =
     await supabaseClient.rpc("get_lottery_tickets");
 
