@@ -100,20 +100,6 @@ async function testSupabaseConnection() {
   $("message").textContent =
     "ተሳክቷል! የቲኬት ሁኔታ ከSupabase ተገኝቷል።";
 }
-  const { data, error } =
-    await supabaseClient.rpc("get_lottery_tickets");
-
-  if (error) {
-    console.error("Supabase error:", error.message);
-    $("message").textContent =
-      "Supabase ሙከራ አልተሳካም። የConsole ስህተትን ፈትሽ።";
-    return;
-  }
-
-  console.log("Supabase connected. Tickets:", data);
-  $("message").textContent =
-    "ተሳክቷል! ከSupabase የቲኬት መረጃ ተመልሷል።";
-}
 const KEY = "abukiLotteryDemoV1";
 let selected = [];
 let records = [];
