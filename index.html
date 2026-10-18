@@ -146,6 +146,12 @@ function renderTickets() {
   grid.innerHTML = "";
   const used = booked();
 
+for (const [id, status] of remoteTicketStatuses) {
+  if (status !== "available") {
+    used.add(id);
+  }
+}
+
   for (let n = 1; n <= 100; n++) {
     const id = pad(n);
     const b = document.createElement("button");
