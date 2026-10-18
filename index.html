@@ -76,10 +76,8 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
-  let remoteTicketStatuses = new Map();
-async function testSupabaseConnection() {
-  const { data, error } =
-    await supabaseClient.rpc(
+let remoteTicketStatuses = new Map();
+
 async function testSupabaseConnection() {
   const { data, error } = await supabaseClient.rpc(
     "get_registered_lottery_tickets"
@@ -104,27 +102,8 @@ async function testSupabaseConnection() {
   $("message").textContent =
     "ተሳክቷል! የቲኬት ሁኔታ ከSupabase ተገኝቷል።";
 }
-);
 
-  if (error) {
-    console.error("Supabase error:", error.message);
-    $("message").textContent =
-      "Supabase ሙከራ አልተሳካም።";
-    return;
-  }
 
-  remoteTicketStatuses = new Map(
-    data.map(ticket => [
-      pad(ticket.ticket_number),
-      String(ticket.status).toLowerCase()
-    ])
-  );
-
-  update();
-
-  $("message").textContent =
-    "ተሳክቷል! የቲኬት ሁኔታ ከSupabase ተገኝቷል።";
-}
 const KEY = "abukiLotteryDemoV1";
 let selected = [];
 let records = [];
