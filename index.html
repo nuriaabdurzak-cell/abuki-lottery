@@ -207,17 +207,7 @@ async function renderHistory() {
       pad(item.ticket_number) +
       " — የሙከራ ምዝገባ";
     box.appendChild(p);
-  });
-}
 
-  records.forEach(r => {
-    const p = document.createElement("p");
-    p.textContent = r.name + " — ቲኬት: " +
-      r.tickets.join(", ") + " — " +
-      (r.tickets.length * 100) + " ብር (ሙከራ)";
-    box.appendChild(p);
-  });
-}
 
 
 $("register").addEventListener("click", async () => {
