@@ -178,13 +178,37 @@ function update() {
   renderHistory();
 }
 
-function renderHistory() {
+async function renderHistory() {
   const box = $("history");
+  box.textContent = "የምዝገባ ታሪክ በመጫን ላይ...";
+
+  const { data, error } = await supabaseClient.rpc(
+    "get_lottery_history"
+  );
+
+  if (error) {
+    console.error("History error:", error.message);
+    box.textContent = "የታሪክ መረጃን ማግኘት አልተቻለም።";
+    return;
+  }
+
   box.innerHTML = "";
-  if (!records.length) {
+
+  if (!data || data.length === 0) {
     box.textContent = "ምዝገባ የለም።";
     return;
   }
+
+  data.forEach(item => {
+    const p = document.createElement("p");
+    p.textContent =
+      item.player_name +
+      " — ቲኬት: " +
+      pad(item.ticket_number) +
+      " — የሙከራ ምዝገባ";
+    box.appendChild(p);
+  });
+}
 
   records.forEach(r => {
     const p = document.createElement("p");
