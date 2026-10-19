@@ -188,7 +188,8 @@ async function renderHistory() {
 
   if (error) {
     console.error("History error:", error.message);
-    box.textContent = "የታሪክ መረጃን ማግኘት አልተቻለም።";
+    box.textContent =
+      "የታሪክ መረጃን ማግኘት አልተቻለም።";
     return;
   }
 
@@ -207,8 +208,8 @@ async function renderHistory() {
       pad(item.ticket_number) +
       " — የሙከራ ምዝገባ";
     box.appendChild(p);
-
-
+  });
+}
 
 $("register").addEventListener("click", async () => {
   const button = $("register");
