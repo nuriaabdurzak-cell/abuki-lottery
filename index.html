@@ -290,9 +290,10 @@ $("draw").addEventListener("click", () => {
     $("result").textContent = "ዕጣው ቀድሞ ወጥቷል።";
     return;
   }
-  const pool = records.flatMap(r =>
-    r.tickets.map(ticket => ({ ticket, name: r.name }))
-  );
+  const pool = remoteHistory.map(item => ({
+  ticket: pad(item.ticket_number),
+  name: item.player_name
+}));
 
   if (!pool.length) {
     $("result").textContent = "መጀመሪያ የሙከራ ቲኬት መዝግብ።";
