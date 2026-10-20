@@ -197,13 +197,27 @@ async function renderHistory() {
     return;
   }
 
-  box.innerHTML = "";
 
-  if (!data || data.length === 0) {
-    box.textContent = "ምዝገባ የለም።";
-    return;
-  }
+remoteHistory = data || [];
 
+box.innerHTML = "";
+
+if (remoteHistory.length === 0) {
+  box.textContent = "ምዝገባ የለም።";
+  return;
+}
+
+remoteHistory.forEach(item => {
+  const p = document.createElement("p");
+
+  p.textContent =
+    item.player_name +
+    " — ቲኬት: " +
+    pad(item.ticket_number) +
+    " — የሙከራ ምዝገባ";
+
+  box.appendChild(p);
+});
   data.forEach(item => {
     const p = document.createElement("p");
     p.textContent =
