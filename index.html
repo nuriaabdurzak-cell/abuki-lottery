@@ -77,7 +77,7 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_KEY
 );
 let remoteTicketStatuses = new Map();
-
+let remoteHistory = [];
 async function testSupabaseConnection() {
   const { data, error } = await supabaseClient.rpc(
     "get_registered_lottery_tickets"
