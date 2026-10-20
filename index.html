@@ -183,20 +183,37 @@ function update() {
 
 async function renderHistory() {
   const box = $("history");
-  box.textContent = "የምዝገባ ታሪክ በመጫን ላይ...";
+  box.textContent = "ታሪኩን በመጫን ላይ...";
 
   const { data, error } = await supabaseClient.rpc(
     "get_lottery_history"
   );
 
   if (error) {
-   remoteHistory = data || []; 
-  console.error("History error:", error.message);
-    box.textContent =
-      "የታሪክ መረጃን ማግኘት አልተቻለም።";
+    console.error("History error:", error);
+    remoteHistory = [];
+    box.textContent = "ታሪኩን ማግኘት አልተቻለም።";
     return;
   }
 
+  remoteHistory = Array.isArray(data) ? data : [];
+  box.replaceChildren();
+
+  if (remoteHistory.length === 0) {
+    box.textContent = "ምዝገባ የለም።";
+    return;
+  }
+
+  remoteHistory.forEach(item => {
+    const p = document.createElement("p");
+    p.textContent =
+      (item.player_name || "ተጠቃሚ") +
+      " — ቲኬት: " +
+      pad(item.ticket_number) +
+      " — የሙከራ ምዝገባ";
+    box.appendChild(p);
+  });
+}
 
 remoteHistory = data || [];
 
