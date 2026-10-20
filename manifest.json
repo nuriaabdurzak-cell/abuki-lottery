@@ -1,0 +1,22 @@
+
+{
+  "id": "./",
+  "name": "አቡኪ ሎተሪ",
+  "short_name": "አቡኪ",
+  "description": "የአቡኪ ነፃ የጨዋታ ሙከራ App",
+  "lang": "am",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f7f2",
+  "theme_color": "#087f23",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
