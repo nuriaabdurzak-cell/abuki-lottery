@@ -187,7 +187,8 @@ async function renderHistory() {
   );
 
   if (error) {
-    console.error("History error:", error.message);
+   remoteHistory = data || []; 
+  console.error("History error:", error.message);
     box.textContent =
       "የታሪክ መረጃን ማግኘት አልተቻለም።";
     return;
