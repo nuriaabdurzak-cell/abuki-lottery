@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="am">
 <head>
@@ -7,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#087f23">
 <link rel="manifest" href="./manifest.json">
-<title>አቡኪ ሎተሪ</title>
+<title>አቡኪ Bingo</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f3f7f2;color:#183321}
@@ -15,436 +16,335 @@ header{background:#087f23;color:white;text-align:center;padding:22px 12px}
 header h1{margin:0 0 8px}
 main{max-width:650px;margin:auto;padding:15px}
 .card{background:white;padding:17px;margin:14px 0;border-radius:15px;box-shadow:0 3px 12px #0001}
-input,button{width:100%;padding:13px;margin-top:10px;border-radius:9px;font-size:16px}
+input,button{width:100%;padding:12px;margin-top:10px;border-radius:9px;font-size:16px}
 input{border:1px solid #bbb}
-button{border:0;background:#087f23;color:white;font-weight:bold}
-button:disabled{background:#aaa}
-.stats{display:flex;justify-content:space-between;gap:8px;font-weight:bold}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:14px}
-.ticket{padding:12px 0;border:1px solid #087f23;background:#fff;color:#087f23;border-radius:8px}
+button{border:0;background:#087f23;color:white;font-weight:bold;cursor:pointer}
+button:disabled{background:#aaa;cursor:not-allowed}
+.stats{display:flex;justify-content:space-between;gap:8px;font-weight:bold;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:14px}
+.ticket{padding:12px 0;border:1px solid #087f23;background:#fff;color:#087f23;margin:0}
 .ticket.selected{background:#087f23;color:white}
 .ticket.taken{background:#ddd;color:#777;border-color:#ddd}
-.small{font-size:13px;color:#555}
-.result{font-size:22px;text-align:center;font-weight:bold;color:#087f23;overflow-wrap:anywhere}
+.small{font-size:13px;color:#555;line-height:1.6}
+.result{font-size:20px;text-align:center;font-weight:bold;color:#087f23;overflow-wrap:anywhere;margin-top:14px}
+.message{line-height:1.6;overflow-wrap:anywhere}
+.history-item{border-bottom:1px solid #eee;padding:9px 0;overflow-wrap:anywhere}
+.secondary{background:#315c9b}
+.danger{background:#9b2525}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <header>
-  <h1>🎟️ አቡኪ ሎተሪ</h1>
-  <div>የሙከራ ስሪት · እውነተኛ ክፍያ የለውም</div>
+  <h1>🟢 አቡኪ Bingo</h1>
+  <div>ነፃ የሙከራ ጨዋታ · ክፍያ የለም</div>
 </header>
+
 <main>
   <section class="card">
-    <h2>የቲኬት ምርጫ</h2>
+    <h2>🔢 ቁጥር ምረጥ</h2>
     <div class="stats">
-      <span>ዋጋ፦ 100 ብር</span>
       <span id="count">የተመረጡ፦ 0</span>
+      <span id="available">የቀሩ፦ 100</span>
     </div>
-    <p class="small">ቲኬት ለመምረጥ ቁጥሩን ጫን።</p>
+    <p class="small">ከ001 እስከ 100 ያሉትን ቁጥሮች ምረጥ። የተመዘገቡ ቁጥሮች እንደገና አይመረጡም።</p>
     <div class="grid" id="tickets"></div>
   </section>
 
   <section class="card">
-    <h2>የተጠቃሚ መረጃ</h2>
-    <input id="player" maxlength="60" placeholder="ስምህን አስገባ">
-    <p id="total">ጠቅላላ፦ 0 ብር</p>
-    <button id="register">ለሙከራ ቲኬት መመዝገብ</button>
-    <p class="small">ይህ ምዝገባ በዚህ መሣሪያ ላይ ብቻ ይቀመጣል፤ ክፍያ አይፈጽምም።</p>
-    <div id="message" role="status"></div>
+    <h2>👤 የተጫዋች መረጃ</h2>
+    <input id="player" maxlength="60" placeholder="የተጫዋች ስም" autocomplete="name">
+    <p id="total">የተመረጡ ቁጥሮች፦ 0</p>
+    <button id="register">ነፃ ምዝገባ አድርግ</button>
+    <div id="message" class="message" role="status" aria-live="polite"></div>
   </section>
 
   <section class="card">
-    <h2>የዕጣ አወጣጥ</h2>
-    <p class="small">በሙከራ የተመዘገቡ ቲኬቶች መካከል አንድ ዕጣ ይመረጣል።</p>
-    <button id="draw">🎲 ዕጣ አውጣ</button>
+    <h2>🎲 የBingo ቁጥር ሙከራ</h2>
+    <p class="small">ይህ ለመዝናኛና ለሙከራ ብቻ የሚሠራ የዘፈቀደ ቁጥር ማውጫ ነው። የገንዘብ ሽልማት የለውም።</p>
+    <button id="draw">ቁጥር አውጣ</button>
     <div id="result" class="result" aria-live="polite"></div>
   </section>
 
   <section class="card">
-    <h2>የሙከራ ምዝገባዎች</h2>
+    <h2>📋 የምዝገባ ታሪክ</h2>
     <div id="history">ምዝገባ የለም።</div>
- <button id="reset" style="background:#9b2525">የሙከራ መረጃዎችን አጥፋ</button>
- <button id="newGame" type="button">
-  🔄 አዲስ ጨዋታ ጀምር
-</button>
+    <button id="newGame" class="secondary">🔄 አዲስ ዙር ጀምር</button>
+    <button id="reset" class="danger">የሙከራ መረጃዎችን አጥፋ</button>
+    <p class="small">መረጃዎች በዚህ መሣሪያና በዚህ ብራውዘር ውስጥ ብቻ ይቀመጣሉ። ወደ ሌላ መሣሪያ አይላኩም።</p>
   </section>
 </main>
 
 <script>
-const SUPABASE_URL = "https://bofjfmjbgbppxkhiubey.supabase.co";
-const SUPABASE_KEY = "sb_publishable_utApJBhyvU2mmPGYkpdJBg_niJW2tTx";
-
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
-let remoteTicketStatuses = new Map();
-let remoteHistory = [];
-async function testSupabaseConnection() {
-  const { data, error } = await supabaseClient.rpc(
-    "get_registered_lottery_tickets"
-  );
-
-  if (error) {
-    console.error("Supabase error:", error.message);
-    $("message").textContent =
-      "የSupabase ግንኙነት አልተሳካም።";
-    return;
-  }
-
-  remoteTicketStatuses = new Map(
-    data.map(ticket => [
-      pad(ticket.ticket_number),
-      String(ticket.status).toLowerCase()
-    ])
-  );
-
-  update();
-
-  $("message").textContent =
-    "ተሳክቷል! የቲኬት ሁኔታ ከSupabase ተገኝቷል።";
-}
-
-
-const KEY = "abukiLotteryDemoV1";
-let selected = [];
-let records = [];
-let drawn = false;
-const WINNER_KEY = "abukiLotteryWinnerV1";
-let savedWinner = localStorage.getItem(WINNER_KEY) || "";
-try {
-  records = JSON.parse(localStorage.getItem(KEY) || "[]");
-  if (!Array.isArray(records)) records = [];
-} catch {
-  records = [];
-}
+"use strict";
 
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(3, "0");
-const booked = () => new Set(records.flatMap(r => r.tickets));
+const STORAGE_KEY = "abukiFreeBingoV1";
 
-function save() {
+let records = [];
+let selected = [];
+let drawnNumbers = [];
+let drawn = false;
+
+function loadData() {
   try {
-    localStorage.setItem(KEY, JSON.stringify(records));
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    records = Array.isArray(saved.records) ? saved.records : [];
+    drawnNumbers = Array.isArray(saved.drawnNumbers)
+      ? saved.drawnNumbers : [];
+    drawn = Boolean(saved.drawn);
+  } catch {
+    records = [];
+    drawnNumbers = [];
+    drawn = false;
+  }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      records,
+      drawnNumbers,
+      drawn
+    }));
     return true;
   } catch {
-    $("message").textContent = "መረጃውን ማስቀመጥ አልተቻለም።";
+    $("message").textContent =
+      "መረጃውን ማስቀመጥ አልተቻለም። የስልክህን የማከማቻ ቦታ አረጋግጥ።";
     return false;
   }
 }
 
-function renderTickets() {
-  const grid = $("tickets");
-  if (!grid) return;
-
-  grid.replaceChildren();
-
-  const used = booked();
-
-  for (const [id, status] of remoteTicketStatuses) {
-    if (status !== "available") {
-      used.add(id);
-    }
-  }
-
-  for (let n = 1; n <= 100; n++) {
-    const id = pad(n);
-    const b = document.createElement("button");
-
-    b.textContent = id;
-    b.className = "ticket";
-    b.type = "button";
-
-    if (used.has(id)) {
-      b.classList.add("taken");
-      b.disabled = true;
-      b.title = "ተመዝግቧል";
-    } else if (selected.includes(id)) {
-      b.classList.add("selected");
-    }
-
-    b.addEventListener("click", () => {
-      if (used.has(id) || drawn) return;
-
-      selected = selected.includes(id)
-        ? selected.filter(x => x !== id)
-        : [...selected, id];
-
-      update();
-    });
-
-    grid.appendChild(b);
-  }
+function bookedNumbers() {
+  return new Set(records.flatMap(r => r.tickets));
 }
 
+function renderTickets() {
+  const grid = $("tickets");
+  grid.replaceChildren();
+
+  const used = bookedNumbers();
+
   for (let n = 1; n <= 100; n++) {
     const id = pad(n);
-    const b = document.createElement("button");
-    b.textContent = id;
-    b.className = "ticket";
-    b.type = "button";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = id;
+    button.className = "ticket";
 
     if (used.has(id)) {
-      b.classList.add("taken");
-      b.disabled = true;
-      b.title = "ተመዝግቧል";
+      button.classList.add("taken");
+      button.disabled = true;
+      button.title = "ቀድሞ ተመዝግቧል";
     } else if (selected.includes(id)) {
-      b.classList.add("selected");
+      button.classList.add("selected");
+      button.setAttribute("aria-pressed", "true");
+    } else {
+      button.setAttribute("aria-pressed", "false");
     }
 
-    b.addEventListener("click", () => {
-      if (used.has(id) || drawn) return;
+    if (drawn) button.disabled = true;
+
+    button.addEventListener("click", () => {
+      if (drawn || used.has(id)) return;
+
       if (selected.includes(id)) {
         selected = selected.filter(x => x !== id);
       } else {
         selected.push(id);
       }
+
       update();
     });
-    grid.appendChild(b);
-  }
-}
 
-function update() {
+    grid.appendChild(button);
+  }
+
   $("count").textContent = "የተመረጡ፦ " + selected.length;
-  $("total").textContent =
-    "ጠቅላላ፦ " + (selected.length * 100) + " ብር";
-  renderTickets();
-  renderHistory();
+  $("available").textContent = "የቀሩ፦ " + (100 - used.size);
+  $("total").textContent = "የተመረጡ ቁጥሮች፦ " + selected.length;
 }
 
-async function renderHistory() {
+function renderHistory() {
   const box = $("history");
-  box.textContent = "ታሪኩን በመጫን ላይ...";
-
-  const { data, error } = await supabaseClient.rpc(
-    "get_lottery_history"
-  );
-
-  if (error) {
-    console.error("History error:", error);
-    remoteHistory = [];
-    box.textContent = "ታሪኩን ማግኘት አልተቻለም።";
-    return;
-  }
-
-  remoteHistory = Array.isArray(data) ? data : [];
   box.replaceChildren();
 
-  if (remoteHistory.length === 0) {
+  if (!records.length) {
     box.textContent = "ምዝገባ የለም።";
     return;
   }
 
-  remoteHistory.forEach(item => {
-    const p = document.createElement("p");
-    p.textContent =
-      (item.player_name || "ተጠቃሚ") +
-      " — ቲኬት: " +
-      pad(item.ticket_number) +
-      " — የሙከራ ምዝገባ";
-    box.appendChild(p);
+  records.slice().reverse().forEach(record => {
+    const item = document.createElement("div");
+    item.className = "history-item";
+
+    const title = document.createElement("strong");
+    title.textContent = record.name;
+
+    const details = document.createElement("div");
+    details.textContent = "ቁጥሮች፦ " + record.tickets.join(", ");
+
+    const date = document.createElement("div");
+    date.className = "small";
+    date.textContent = record.date || "";
+
+    item.append(title, details, date);
+    box.appendChild(item);
   });
 }
 
-remoteHistory = data || [];
-
-box.innerHTML = "";
-
-if (remoteHistory.length === 0) {
-  box.textContent = "ምዝገባ የለም።";
-  return;
+function update() {
+  renderTickets();
+  renderHistory();
+  $("draw").disabled = drawn;
 }
 
-remoteHistory.forEach(item => {
-  const p = document.createElement("p");
-
-  p.textContent =
-    item.player_name +
-    " — ቲኬት: " +
-    pad(item.ticket_number) +
-    " — የሙከራ ምዝገባ";
-
-  box.appendChild(p);
-});
-  data.forEach(item => {
-    const p = document.createElement("p");
-    p.textContent =
-      item.player_name +
-      " — ቲኬት: " +
-      pad(item.ticket_number) +
-      " — የሙከራ ምዝገባ";
-    box.appendChild(p);
-  });
-}
-
-$("register").addEventListener("click", async () => {
-  const button = $("register");
-
+$("register").addEventListener("click", () => {
   if (drawn) {
     $("message").textContent =
-      "ዕጣው ወጥቷል።";
+      "ይህ ዙር ተጠናቋል። አዲስ ዙር ጀምር።";
     return;
   }
 
   const name = $("player").value.trim();
 
   if (!name) {
-    $("message").textContent =
-      "እባክህ ስምህን አስገባ።";
+    $("message").textContent = "እባክህ የተጫዋች ስም አስገባ።";
+    $("player").focus();
     return;
   }
 
   if (!selected.length) {
-    $("message").textContent =
-      "ቢያንስ አንድ ቲኬት ምረጥ።";
+    $("message").textContent = "ቢያንስ አንድ ቁጥር ምረጥ።";
     return;
   }
 
-  if (selected.some(id =>
-    remoteTicketStatuses.get(id) !== "available"
-  )) {
-    $("message").textContent =
-      "አንዳንድ ቲኬቶች ተይዘዋል። እንደገና ምረጥ።";
+  const used = bookedNumbers();
+  if (selected.some(id => used.has(id))) {
     selected = [];
-    await testSupabaseConnection();
     update();
+    $("message").textContent =
+      "አንዳንድ ቁጥሮች ተመዝግበዋል። እንደገና ምረጥ።";
     return;
   }
 
-  button.disabled = true;
-  $("message").textContent =
-    "ምዝገባው በመካሄድ ላይ ነው...";
+  const record = {
+    name,
+    tickets: [...selected],
+    date: new Date().toLocaleString()
+  };
 
-  try {
-    const { error } = await supabaseClient.rpc(
-      "register_lottery_tickets",
-      {
-        p_name: name,
-        p_tickets: selected.map(Number)
-      }
-    );
+  records.push(record);
 
-    if (error) {
-      console.error("Registration error:", error.message);
-      $("message").textContent =
-        "ምዝገባው አልተሳካም። ቲኬቶቹ ተይዘው ሊሆኑ ይችላሉ።";
-      await testSupabaseConnection();
-      return;
-    }
-
-    selected = [];
-    $("player").value = "";
-
-    await testSupabaseConnection();
-
-    $("message").textContent =
-      "የሙከራ ምዝገባው በSupabase ተቀምጧል።";
-
-  } catch (err) {
-    console.error(err);
-    $("message").textContent =
-      "የግንኙነት ችግር አለ። እባክህ እንደገና ሞክር።";
-  } finally {
-    button.disabled = false;
+  if (!saveData()) {
+    records.pop();
+    return;
   }
-});
 
+  selected = [];
+  $("player").value = "";
+  $("message").textContent = "የነፃ ሙከራ ምዝገባው ተሳክቷል።";
+  update();
+});
 
 $("draw").addEventListener("click", () => {
   if (drawn) {
-    $("result").textContent = "ዕጣው ቀድሞ ወጥቷል።";
-    return;
-  }
-  const pool = remoteHistory.map(item => ({
-  ticket: pad(item.ticket_number),
-  name: item.player_name
-}));
-
-  if (!pool.length) {
-    $("result").textContent = "መጀመሪያ የሙከራ ቲኬት መዝግብ።";
+    $("result").textContent =
+      "ይህ ዙር ቀድሞ ተጠናቋል።";
     return;
   }
 
-  const winner = pool[Math.floor(Math.random() * pool.length)];
+  if (!records.length) {
+    $("result").textContent =
+      "መጀመሪያ የነፃ ሙከራ ምዝገባ አድርግ።";
+    return;
+  }
+
+  const available = [];
+  for (let n = 1; n <= 100; n++) {
+    if (!drawnNumbers.includes(n)) available.push(n);
+  }
+
+  if (!available.length) {
+    $("result").textContent = "ሁሉም ቁጥሮች ወጥተዋል።";
+    return;
+  }
+
+  const number = available[Math.floor(Math.random() * available.length)];
+  drawnNumbers.push(number);
   drawn = true;
-  localStorage.setItem(
-  WINNER_KEY,
-  JSON.stringify(winner)
-);
-  $("result").textContent =
-    "የሙከራ ዕጣ፦ " + winner.ticket +
-    " · ስም፦ " + winner.name;
-  $("draw").disabled = true;
+
+  if (!saveData()) {
+    drawnNumbers.pop();
+    drawn = false;
+    return;
+  }
+
+  const id = pad(number);
+  const matching = records.filter(r => r.tickets.includes(id));
+
+  $("result").textContent = matching.length
+    ? "የወጣው ቁጥር፦ " + id + " — ከተጫዋች ቁጥሮች ጋር ተዛምዷል።"
+    : "የወጣው ቁጥር፦ " + id;
+
+  update();
+});
+
+$("newGame").addEventListener("click", () => {
+  if (!confirm(
+    "አዲስ ዙር ትጀምራለህ? የዚህ ዙር ውጤት ይጸዳል፤ የምዝገባ ታሪኩ ይቀመጣል።"
+  )) return;
+
+  drawnNumbers = [];
+  drawn = false;
+  selected = [];
+
+  if (!saveData()) return;
+
+  $("result").textContent = "";
+  $("message").textContent = "አዲስ ዙር ለመጀመር ዝግጁ ነው።";
+  update();
 });
 
 $("reset").addEventListener("click", () => {
-  if (!confirm("ሁሉንም የሙከራ ምዝገባዎች እና ውጤት ማጥፋት ትፈልጋለህ?")) return;
+  if (!confirm(
+    "ይህ በዚህ መሣሪያ ላይ ያለውን ሁሉንም የሙከራ ታሪክ ያጠፋል። ቀጥል?"
+  )) return;
+
   records = [];
   selected = [];
+  drawnNumbers = [];
   drawn = false;
-  try { localStorage.removeItem(KEY); } catch {}
- try { localStorage.removeItem(WINNER_KEY); } catch {}
+
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    $("message").textContent = "መረጃውን ማጥፋት አልተቻለም።";
+    return;
+  }
+
   $("result").textContent = "";
   $("message").textContent = "የሙከራ መረጃዎች ተጠርገዋል።";
-  $("draw").disabled = false;
   update();
 });
-try {
-  if (savedWinner) {
-    const winner = JSON.parse(savedWinner);
-    drawn = true;
-    $("result").textContent =
-      "የዕድለኛ ቁጥር፦ " + winner.ticket +
-      " | ስም፦ " + winner.name;
-    $("draw").disabled = true;
-  }
-} catch (e) {
-  localStorage.removeItem(WINNER_KEY);
-}
+
+loadData();
 update();
-testSupabaseConnection()
-$("newGame").addEventListener("click", () => {
-  const ok = confirm(
-    "አዲስ ጨዋታ መጀመር ትፈልጋለህ? " +
-    "የዚህ መሣሪያ የተመረጡ ቁጥሮችና የውጤት መረጃ ይጸዳሉ።"
-  );
 
-  if (!ok) return;
-
-  selected = [];
-  drawn = false;
-  savedWinner = "";
-
-  localStorage.removeItem(WINNER_KEY);
-
-  $("player").value = "";
-  $("result").textContent = "";
-  $("message").textContent = "አዲስ ጨዋታ ለመጀመር ዝግጁ ነው።";
-
-  $("draw").disabled = false;
-  $("register").disabled = false;
-
-  update();
-});
+if (drawn && drawnNumbers.length) {
+  $("result").textContent =
+    "የዚህ ዙር ቁጥር፦ " + pad(drawnNumbers[drawnNumbers.length - 1]);
+}
 </script>
 
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("./service-worker.js")
-      .then(() => {
-        console.log("Abuki App is ready");
-      })
-      .catch((error) => {
-        console.error("Service Worker error:", error);
-      });
+    navigator.serviceWorker.register("./service-worker.js")
+      .catch(error => console.error("Service Worker error:", error));
   });
 }
 </script>
 </body>
 </html>
-
 
