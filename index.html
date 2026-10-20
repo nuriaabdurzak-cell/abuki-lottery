@@ -136,12 +136,45 @@ function save() {
 
 function renderTickets() {
   const grid = $("tickets");
-  grid.innerHTML = "";
+  if (!grid) return;
+
+  grid.replaceChildren();
+
   const used = booked();
 
-for (const [id, status] of remoteTicketStatuses) {
-  if (status !== "available") {
-    used.add(id);
+  for (const [id, status] of remoteTicketStatuses) {
+    if (status !== "available") {
+      used.add(id);
+    }
+  }
+
+  for (let n = 1; n <= 100; n++) {
+    const id = pad(n);
+    const b = document.createElement("button");
+
+    b.textContent = id;
+    b.className = "ticket";
+    b.type = "button";
+
+    if (used.has(id)) {
+      b.classList.add("taken");
+      b.disabled = true;
+      b.title = "ተመዝግቧል";
+    } else if (selected.includes(id)) {
+      b.classList.add("selected");
+    }
+
+    b.addEventListener("click", () => {
+      if (used.has(id) || drawn) return;
+
+      selected = selected.includes(id)
+        ? selected.filter(x => x !== id)
+        : [...selected, id];
+
+      update();
+    });
+
+    grid.appendChild(b);
   }
 }
 
