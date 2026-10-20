@@ -341,6 +341,29 @@ try {
 }
 update();
 testSupabaseConnection()
+$("newGame").addEventListener("click", () => {
+  const ok = confirm(
+    "አዲስ ጨዋታ መጀመር ትፈልጋለህ? " +
+    "የዚህ መሣሪያ የተመረጡ ቁጥሮችና የውጤት መረጃ ይጸዳሉ።"
+  );
+
+  if (!ok) return;
+
+  selected = [];
+  drawn = false;
+  savedWinner = "";
+
+  localStorage.removeItem(WINNER_KEY);
+
+  $("player").value = "";
+  $("result").textContent = "";
+  $("message").textContent = "አዲስ ጨዋታ ለመጀመር ዝግጁ ነው።";
+
+  $("draw").disabled = false;
+  $("register").disabled = false;
+
+  update();
+});
 </script>
 
 <script>
