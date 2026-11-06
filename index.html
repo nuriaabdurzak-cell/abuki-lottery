@@ -79,6 +79,10 @@ button:disabled{background:#aaa;cursor:not-allowed}
 "use strict";
 
 const $ = id => document.getElementById(id);
+  const sb = window.supabase.createClient(
+  "https://bofjfmjbgbppxkhiubey.supabase.co",
+  "sb_publishable_utApJBhyvU2mmPGYkpdJBg_niJW2tTx"
+);
 const pad = n => String(n).padStart(3, "0");
 const STORAGE_KEY = "abukiFreeBingoV1";
 
